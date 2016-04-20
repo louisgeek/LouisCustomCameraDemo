@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/id_rl_cp_view"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <com.louisgeek.louiscustomcamerademo.CameraPreview
+        android:id="@+id/camera_preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white" />
+    <!-- 网格线 -->
+
+    <com.louisgeek.louiscustomcamerademo.CameraLine
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:lineWidth="1dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <ImageView
+            android:id="@+id/preview_iv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="59dp"
+        android:layout_alignParentBottom="true" >
+
+        <Button
+            android:id="@+id/torch_switch_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:layout_marginLeft="10dp"
+            android:gravity="center"
+            android:onClick="onClick"
+            android:text="闪光灯" />
+
+        <Button
+            android:id="@+id/choose_picture_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_margin="10dp"
+            android:layout_marginLeft="10dp"
+            android:gravity="center"
+            android:onClick="onClick"
+            android:text="相册" />
+
+        <Button
+            android:id="@+id/shutter_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:onClick="onClick"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="拍摄" />
+    </RelativeLayout>
+
+</RelativeLayout>
