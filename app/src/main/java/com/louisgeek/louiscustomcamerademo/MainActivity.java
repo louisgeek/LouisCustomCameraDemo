@@ -30,9 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * 拍照并截取中间设定区域
- *
- * 主要遇到的问题：显示相机SurfaceView尺寸，相机预览尺寸 和 相机保存图片尺寸 三者不一致 导致截图需要处理后才能准确
+ * 遇到的问题：显示相机SurfaceView尺寸，相机预览尺寸 和 相机保存图片尺寸 三者不一致
  *
  */
 public class MainActivity extends Activity implements Camera.PictureCallback, Camera.ShutterCallback {

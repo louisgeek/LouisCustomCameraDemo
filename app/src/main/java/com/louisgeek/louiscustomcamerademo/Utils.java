@@ -16,11 +16,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.lang.reflect.Field;
 
-/**
- * 工具类
- * <p/>
- * Created by zhenguo on 2/27/15.
- */
 public class Utils {
 
     public static File getDiskCacheDir(Context context, String uniqueName) {
