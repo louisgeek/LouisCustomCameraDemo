@@ -9,14 +9,19 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
-/**
- */
+
 public class CameraLine extends View {
 
     private Paint mLinePaint;
     private Paint mLineCrossPaint;
 
-    int nowStyle=0;//普通
+
+    final  int LINE_STYLE_HIDE_LINE=0;
+    final  int LINE_STYLE_SHOW_LINES=1;
+    final  int LINE_STYLE_SHOW_LINES_LINE_IS_WIDE=2;
+
+
+    int nowLineStyle=LINE_STYLE_HIDE_LINE;//默认隐藏
     boolean showLines;
 
 
@@ -83,19 +88,19 @@ public class CameraLine extends View {
 
     }
     public void changeLineStyle(){
-        switch (nowStyle){
-            case 0:
-                nowStyle=1;
+        switch (nowLineStyle){
+            case LINE_STYLE_HIDE_LINE:
+                nowLineStyle=LINE_STYLE_SHOW_LINES;
                 lineIsWide=true;
                 showLines=true;
                 break;
-            case 1:
-                nowStyle=2;
+            case LINE_STYLE_SHOW_LINES:
+                nowLineStyle=LINE_STYLE_SHOW_LINES_LINE_IS_WIDE;
                 lineIsWide=false;
                 showLines=true;
                 break;
-            case 2:
-                nowStyle=0;
+            case LINE_STYLE_SHOW_LINES_LINE_IS_WIDE:
+                nowLineStyle=LINE_STYLE_HIDE_LINE;
                 showLines=false;
                 break;
         }

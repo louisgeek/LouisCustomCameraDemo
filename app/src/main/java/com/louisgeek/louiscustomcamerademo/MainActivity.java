@@ -9,17 +9,18 @@ import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.Display;
+import android.view.Surface;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -28,6 +29,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * 遇到的问题：显示相机SurfaceView尺寸，相机预览尺寸 和 相机保存图片尺寸 三者不一致
@@ -62,7 +65,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     // 两个相机的情况下
     // The first rear facing camera
     private int defaultCameraId = 1;
-
+    int cameraPosition = 1;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -157,9 +160,26 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                 // 自动对焦
                 params.setFocusMode(Parameters.FOCUS_MODE_AUTO);
                 mCamera.setParameters(params);
-                mCamera.takePicture(null, null, picture);*/
-
-                takePicture(null, null, this);
+                mCamera.takePicture(null, null, mPictureCallback);*/
+                //快门
+                stopFocus();
+                mCamera.autoFocus(new Camera.AutoFocusCallback() {//自动对焦
+                    @Override
+                    public void onAutoFocus(boolean success, Camera camera) {
+                        // TODO Auto-generated method stub
+                        if (success) {
+                          /*  //设置参数，并拍照
+                            Camera.Parameters params = camera.getParameters();
+                            params.setPictureFormat(PixelFormat.JPEG);//图片格式
+                            params.setPreviewSize(800, 480);//图片大小
+                            camera.setParameters(params);//将参数设置到我的camera
+                            camera.takePicture(null, null, mPictureCallback);//将拍摄到的照片给自定义的对象*/
+                            // camera.takePicture(null, null, MainActivity.this);
+                             takePicture(null, null, MainActivity.this);
+                        }
+                    }
+                });
+                // takePicture(null, null, this);
                 break;
             case R.id.id_iv_flash_switch:
                 toggleFlash();
@@ -171,7 +191,8 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                 //###choosePicture();
                 break;*/
             case R.id.id_iv_change:
-                changeCamera();
+               // changeCamera();
+                changeCameraTwo();
                 break;
             default:
 
@@ -214,6 +235,61 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                 }
             }}
     }
+    void changeCameraTwo(){
+        //切换前后摄像头
+        int cameraCount = 0;
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        cameraCount = Camera.getNumberOfCameras();//得到摄像头的个数
+        for(int i = 0; i < cameraCount; i++   ) {
+            Camera.getCameraInfo(i, cameraInfo);//得到每一个摄像头的信息
+            if(cameraPosition == 1) {
+                Toast.makeText(this, "1现在是后置，变更为前置", Toast.LENGTH_SHORT).show();
+                //现在是后置，变更为前置
+                if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_FRONT) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
+                    mCamera.stopPreview();//停掉原来摄像头的预览
+                   /*
+                    mCamera.release();//释放资源
+                    mCamera = null;//取消原来摄像头*/
+                    releaseCamera();
+                    mCamera = Camera.open(i);//打开当前选中的摄像头
+                    try {
+                        mCamera.setPreviewDisplay(mPreview.getLouisSurfaceHolder());//通过surfaceview显示取景画面
+                       // mCamera.setDisplayOrientation(90); //
+                        mPreview.setCamera(mCamera);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    mCamera.startPreview();//开始预览
+                    cameraPosition = 0;
+                    break;
+                }
+            } else {
+                Toast.makeText(this, "2现在是前置， 变更为后置", Toast.LENGTH_SHORT).show();
+                //现在是前置， 变更为后置
+                if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_BACK) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
+                    mCamera.stopPreview();//停掉原来摄像头的预览
+                    /*
+                    mCamera.release();//释放资源
+                    mCamera = null;//取消原来摄像头*/
+                    releaseCamera();
+                    mCamera = Camera.open(i);//打开当前选中的摄像头
+                    try {
+                        mCamera.setPreviewDisplay(mPreview.getLouisSurfaceHolder());//通过surfaceview显示取景画面
+                        // mCamera.setDisplayOrientation(90); //
+                        mPreview.setCamera(mCamera);
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    mCamera.startPreview();//开始预览
+                    cameraPosition = 1;
+                    break;
+                }
+            }
+
+        }
+    }
     private void startCamera() {
         // Open the default i.e. the first rear facing camera.
         try {
@@ -234,6 +310,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     protected void onPause() {
         super.onPause();
         stopFocus();
+        releaseCamera();
     }
 
     /**
@@ -264,6 +341,17 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         // important to release it when the activity is paused.
         if (mCamera != null) {
             mPreview.setCamera(null);
+            mCamera.release();
+            mCamera = null;
+        }
+    }
+    /**
+     * 释放mCamera
+     */
+    private void releaseCameraTwo() {
+        if (mCamera != null) {
+            mCamera.setPreviewCallback(null);
+            mCamera.stopPreview();// 停掉原来摄像头的预览
             mCamera.release();
             mCamera = null;
         }
@@ -432,7 +520,11 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length);
 
         //## Bitmap rightBitmap = Utils.rotate(b, 90);
-        rightBitmap = Utils.rotate(b, 90);
+        if(cameraPosition==1) {
+            rightBitmap = Utils.rotate(b, 90);
+        }else{
+            rightBitmap = Utils.rotate(b, 270);
+        }
 
         Utils.compress(rightBitmap, 2 * 1024 * 1024);
 
@@ -471,7 +563,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             public void run() {
                 //####2016年4月20日20:02:15 preview_iv.setImageBitmap(bmp);
                 preview_iv.setImageBitmap(rightBitmap);
-                preview_iv.setScaleType(ScaleType.FIT_XY);
+               // preview_iv.setScaleType(ScaleType.FIT_XY);
             }
         });
 
@@ -521,6 +613,108 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         return TextUtils.isEmpty(img_path) ? null : img_path;
     }
 
+
+    /**
+     * 把图片byte流转换成bitmap
+     */
+    private Bitmap byteToBitmap(byte[] data) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+        int i = 0;
+        while (true) {
+            if ((options.outWidth >> i <= 1000)
+                    && (options.outHeight >> i <= 1000)) {
+                options.inSampleSize = (int) Math.pow(2.0D, i);
+                options.inJustDecodeBounds = false;
+                b = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+                break;
+            }
+            i += 1;
+        }
+        return b;
+    }
+
+    // 用于根据手机方向获得相机预览画面旋转的角度
+    public static int getPreviewDegree(Activity activity) {
+        int degree = 0;
+        // 获得手机的方向
+        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+        //Log.d(TAG, "rotation : " + rotation);
+        // 根据手机的方向计算相机预览画面应该选择的角度
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                degree = 90;
+                break;
+            case Surface.ROTATION_90:
+                degree = 0;
+                break;
+            case Surface.ROTATION_180:
+                degree = 270;
+                break;
+            case Surface.ROTATION_270:
+                degree = 180;
+                break;
+        }
+        return degree;
+    }
+    public String saveImageFilePath(){
+        String imageFilePath = Environment.getExternalStorageDirectory().getPath();
+        SimpleDateFormat sdf =   new SimpleDateFormat("yyyy_MM_dd" );
+        imageFilePath = imageFilePath+ File.separator+"TongueImage";
+
+        IfNotExistMkdir(imageFilePath);
+
+        String subPath=File.separator+sdf.format(new Date());
+        imageFilePath +=subPath;
+
+        IfNotExistMkdir(imageFilePath);
+
+        SimpleDateFormat hms =   new SimpleDateFormat("HHMMSS");
+        String FileName=hms.format(new Date());
+        return imageFilePath=File.separator+imageFilePath+File.separator+FileName+".jpg";
+    }
+    private void IfNotExistMkdir(String filePath)
+    {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            try{
+                file.mkdir();
+            }catch(Exception e)
+            {
+                //no do
+            }
+
+
+        }
+    }
+    public void saveToSDCard(byte[] data) throws IOException {
+       // Log.d(TAG, "saveToSDCard");
+        Date date = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss"); // 格式化时间
+        String filename = format.format(date) + ".jpg";
+        File fileFolder = new File(Environment.getExternalStorageDirectory() + "/ansen/");// Environment.getRootDirectory()
+        if (!fileFolder.exists()) {
+            fileFolder.mkdir();
+        }
+        File jpgFile = new File(fileFolder, filename);
+        FileOutputStream outputStream = new FileOutputStream(jpgFile); // 文件输出流
+        outputStream.write(data);
+        outputStream.close();
+        mCamera.startPreview(); // 拍完照后，重新开始预览
+        if (false) {
+            Bitmap b = byteToBitmap(data);
+            // 获取手机屏幕的宽高
+            WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+            int windowWidth = windowManager.getDefaultDisplay().getWidth();
+            int windowHight = windowManager.getDefaultDisplay().getHeight();
+            Bitmap bitmap = Bitmap.createBitmap(b, 0, 0, windowWidth, windowHight);
+            // 图片压缩
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+            outputStream.flush();
+
+        }
+    }
 }
 
 
