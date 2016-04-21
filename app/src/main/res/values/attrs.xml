@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
      <declare-styleable name="CameraLine_Attrs">  
-        <attr name="lineIsWide" format="boolean"/>  
-        <attr name="lineColor" format="color"/>   
-         <attr name="lineWidth" format="dimension"/>  
+         <attr name="lineIsWide" format="boolean"/>
+         <attr name="lineCrossLength" format="dimension"/>
+         <attr name="lineColor" format="color"/>
+         <attr name="lineWidth" format="dimension"/>
+         <attr name="lineCrossWidth" format="dimension"/>
+         <attr name="lineCrossColor" format="color"/>
+         <attr name="lineIsShow" format="boolean"/>
     </declare-styleable>  
 </resources>

@@ -10,19 +10,56 @@
         android:layout_height="match_parent"
         android:background="@android:color/white" />
     <!-- 网格线 -->
-
     <com.louisgeek.louiscustomcamerademo.CameraLine
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/id_cl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:lineWidth="1dp" />
+        app:lineWidth="1dp"
+        app:lineCrossWidth="1dp"
+        app:lineCrossLength="5dp"
+        app:lineIsShow="false"
+        />
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
         <ImageView
-            android:id="@+id/preview_iv"
+            android:id="@+id/id_iv_flash_switch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="10dp"
+            android:gravity="center"
+            android:src="@mipmap/camera_flash_off"
+            android:onClick="onClick"
+            />
+
+        <ImageView
+            android:id="@+id/id_iv_config_line"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:src="@mipmap/camera_config"
+            android:onClick="onClick"
+            />
+
+        <ImageView
+            android:id="@+id/id_iv_change"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_alignParentRight="true"
+            android:gravity="center"
+            android:src="@mipmap/camera_change"
+            android:onClick="onClick"
+            />
+        <ImageView
+            android:id="@+id/id_preview_iv"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </RelativeLayout>
@@ -32,17 +69,19 @@
         android:layout_height="59dp"
         android:layout_alignParentBottom="true" >
 
-        <Button
+        <!--<ImageView
             android:id="@+id/torch_switch_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
             android:layout_marginLeft="10dp"
             android:gravity="center"
+            android:src="@mipmap/camera_flash_off"
             android:onClick="onClick"
-            android:text="闪光灯" />
+             />-->
 
-        <Button
+
+       <!-- <ImageView
             android:id="@+id/choose_picture_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -51,20 +90,19 @@
             android:layout_margin="10dp"
             android:layout_marginLeft="10dp"
             android:gravity="center"
+            android:src="@mipmap/camera_config"
             android:onClick="onClick"
-            android:text="相册" />
+            />-->
 
-        <Button
-            android:id="@+id/shutter_btn"
+        <ImageView
+            android:id="@+id/id_iv_shutter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:onClick="onClick"
-            android:paddingLeft="20dp"
-            android:paddingRight="20dp"
-            android:text="拍摄" />
+            android:src="@mipmap/camera_normal_new"
+             />
     </RelativeLayout>
 
 </RelativeLayout>

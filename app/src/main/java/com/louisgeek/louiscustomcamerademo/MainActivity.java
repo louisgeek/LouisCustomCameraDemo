@@ -31,7 +31,6 @@ import java.io.IOException;
 
 /**
  * 遇到的问题：显示相机SurfaceView尺寸，相机预览尺寸 和 相机保存图片尺寸 三者不一致
- *
  */
 public class MainActivity extends Activity implements Camera.PictureCallback, Camera.ShutterCallback {
 
@@ -53,14 +52,17 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     int numberOfCameras;
     int cameraCurrentlyLocked;
 
-    // The first rear facing camera
-    int defaultCameraId;
 
     private ImageView preview_iv;
     private Handler handler;
     Bitmap rightBitmap;
+    ImageView id_iv_flash_switch;
+    int Request_Code_Camera = 10;
+    CameraLine mCameraLine;
+    // 两个相机的情况下
+    // The first rear facing camera
+    private int defaultCameraId = 1;
 
-    int Request_Code_Camera=10;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,10 +89,14 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                 Manifest.permission.CAMERA);*/
 
 
-
+        if (!Utils.checkCameraHardware(this)) {
+            Toast.makeText(MainActivity.this, "设备没有摄像头", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        mCameraLine= (CameraLine) findViewById(R.id.id_cl);
         //
-        preview_iv = (ImageView) findViewById(R.id.preview_iv);
-        RelativeLayout id_rl_cp_view= (RelativeLayout) findViewById(R.id.id_rl_cp_view);
+        preview_iv = (ImageView) findViewById(R.id.id_preview_iv);
+        RelativeLayout id_rl_cp_view = (RelativeLayout) findViewById(R.id.id_rl_cp_view);
         DoubleClickConfig.registerDoubleClickListener(id_rl_cp_view, new DoubleClickConfig.OnDoubleClickListener() {
 
             @Override
@@ -106,7 +112,9 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             }
         });
 
-        handler = new Handler(){
+        id_iv_flash_switch = (ImageView) findViewById(R.id.id_iv_flash_switch);
+
+        handler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 if (msg.what == FLAG_AUTO_FOCUS) {
@@ -135,31 +143,35 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         // and set it as the content of our activity.
         mPreview = (CameraPreview) findViewById(R.id.camera_preview);
 
-        // Find the total number of cameras available
-        numberOfCameras = Camera.getNumberOfCameras();
+        startCamera();
 
-        // Find the ID of the default camera
-        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        for (int i = 0; i < numberOfCameras; i++) {
-            Camera.getCameraInfo(i, cameraInfo);
-            if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {
-                defaultCameraId = i;
-            }
-        }
-        //2016年4月20日19:25:03
-        startFocus();
     }
 
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.shutter_btn:
+            case R.id.id_iv_shutter:
+             /*   // 拍照,设置相关参数
+                Camera.Parameters params = mCamera.getParameters();
+                params.setPictureFormat(ImageFormat.JPEG);
+                params.setPreviewSize(800, 400);
+                // 自动对焦
+                params.setFocusMode(Parameters.FOCUS_MODE_AUTO);
+                mCamera.setParameters(params);
+                mCamera.takePicture(null, null, picture);*/
+
                 takePicture(null, null, this);
                 break;
-            case R.id.torch_switch_btn:
-                toggleTorch();
+            case R.id.id_iv_flash_switch:
+                toggleFlash();
                 break;
-            case R.id.choose_picture_btn:
+            case R.id.id_iv_config_line:
+                mCameraLine.changeLineStyle();
+                break;
+            /*case R.id.id_iv_config_line:
                 //###choosePicture();
+                break;*/
+            case R.id.id_iv_change:
+                changeCamera();
                 break;
             default:
 
@@ -172,6 +184,37 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     protected void onResume() {
         super.onResume();
 
+       startCamera();
+    }
+    private void changeCamera(){
+        // Find the total number of cameras available
+        numberOfCameras = Camera.getNumberOfCameras();
+
+        // Find the ID of the default camera
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        for (int i = 0; i < numberOfCameras; i++) {
+            Camera.getCameraInfo(i, cameraInfo);
+            if(defaultCameraId == 1) {
+                if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_FRONT) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
+
+                    releaseCamera();
+                    mCamera = Camera.open(i);//打开当前选中的摄像头
+
+                    defaultCameraId = 0;
+                    break;
+                }
+        }else {
+                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
+
+                    mCamera.release();//释放资源
+                    mCamera = Camera.open(i);//打开当前选中的摄像头
+
+                    defaultCameraId = 1;
+                    break;
+                }
+            }}
+    }
+    private void startCamera() {
         // Open the default i.e. the first rear facing camera.
         try {
             if (mCamera == null) {
@@ -184,7 +227,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         cameraCurrentlyLocked = defaultCameraId;
         mPreview.setCamera(mCamera);
 
-        // startFocus();
+        startFocus();
     }
 
     @Override
@@ -211,6 +254,12 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        releaseCamera();
+    }
+    /**
+     * 释放mCamera
+     */
+    private void releaseCamera() {
         // Because the Camera object is a shared resource, it's very
         // important to release it when the activity is paused.
         if (mCamera != null) {
@@ -282,21 +331,38 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
 
     /**
      * 开关闪光灯
+     * <p/>
+     * 持续的亮灯FLASH_MODE_TORCH
+     * 闪一下FLASH_MODE_ON
+     * 关闭模式FLASH_MODE_OFF
+     * 自动感应是否要用闪光灯FLASH_MODE_AUTO
      */
-    public void toggleTorch() {
+    public void toggleFlash() {
         if (mCamera == null) {
             return;
         }
+
         Camera.Parameters p = mCamera.getParameters();
         if (Camera.Parameters.FLASH_MODE_OFF.equals(p.getFlashMode())) {
-            p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+            p.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
             mCamera.setParameters(p);
+            id_iv_flash_switch.setImageDrawable(getResources().getDrawable(R.mipmap.camera_flash_on));
+        } else if (Camera.Parameters.FLASH_MODE_ON.equals(p.getFlashMode())) {
+            p.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+            mCamera.setParameters(p);
+            id_iv_flash_switch.setImageDrawable(getResources().getDrawable(R.mipmap.camera_flash_auto));
+        } else if (Camera.Parameters.FLASH_MODE_AUTO.equals(p.getFlashMode())) {
+            p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);//持续的亮灯
+            mCamera.setParameters(p);
+            id_iv_flash_switch.setImageDrawable(getResources().getDrawable(R.mipmap.camera_flash_light));
         } else if (Camera.Parameters.FLASH_MODE_TORCH.equals(p.getFlashMode())) {
             p.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
             mCamera.setParameters(p);
+            id_iv_flash_switch.setImageDrawable(getResources().getDrawable(R.mipmap.camera_flash_off));
         } else {
             Toast.makeText(this, "Flash mode setting is not supported.", Toast.LENGTH_SHORT).show();
         }
+
     }
 
     /**
