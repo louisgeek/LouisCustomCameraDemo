@@ -135,7 +135,7 @@ public class CameraActivity extends Activity implements Camera.PictureCallback, 
                     if (mCamera != null && safeToTakePicture && !TextUtils.isEmpty(mCamera.getParameters().getFlashMode())) {
                         mCamera.startPreview();
                         mCamera.autoFocus(null);
-                        Toast.makeText(CameraActivity.this, "auto focus", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(CameraActivity.this, "auto focus", Toast.LENGTH_SHORT).show();
                     }
 
                     handler.sendEmptyMessageDelayed(FLAG_AUTO_FOCUS, FOCUS_DURATION);

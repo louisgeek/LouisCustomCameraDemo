@@ -18,7 +18,6 @@
         app:lineWidth="1dp"
         app:lineCrossWidth="1dp"
         app:lineCrossLength="5dp"
-        app:lineIsShow="false"
         />
 
     <RelativeLayout
