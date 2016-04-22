@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -29,19 +30,7 @@ public class Utils {
         return new File(cachePath + File.separator + uniqueName);
     }
 
-    /**
-     * 旋转图片
-     *
-     * @param angle  旋转角度
-     * @param bitmap 要旋转的图片
-     * @return 旋转后的图片
-     */
-    public static Bitmap rotate(Bitmap bitmap, int angle) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(angle);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                bitmap.getHeight(), matrix, true);
-    }
+
 
     /**
      * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
@@ -330,14 +319,26 @@ public class Utils {
         }
         return path;
     }
-
+    /**
+     * 旋转图片
+     *
+     * @param angle  旋转角度
+     * @param bitmap 要旋转的图片
+     * @return 旋转后的图片
+     */
+    public static Bitmap rotate(Bitmap bitmap, int angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
+                bitmap.getHeight(), matrix, true);
+    }
     /**
      * bitmap旋转
      * @param b
      * @param degrees
      * @return
      */
-    public static Bitmap rotateNew(Bitmap b, int degrees) {
+    public static Bitmap rotateTwo(Bitmap b, int degrees) {
         if (degrees != 0 && b != null) {
             Matrix m = new Matrix();
             m.setRotate(degrees, (float) b.getWidth() / 2, (float) b.getHeight() / 2);
@@ -365,4 +366,24 @@ public class Utils {
         return width;
     }
 
+    /**
+     * 把图片byte流转换成bitmap
+     */
+    public static Bitmap byteToBitmap(byte[] data) {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+        int i = 0;
+        while (true) {
+            if ((options.outWidth >> i <= 1000)
+                    && (options.outHeight >> i <= 1000)) {
+                options.inSampleSize = (int) Math.pow(2.0D, i);
+                options.inJustDecodeBounds = false;
+                b = BitmapFactory.decodeByteArray(data, 0, data.length, options);
+                break;
+            }
+            i += 1;
+        }
+        return b;
+    }
 }

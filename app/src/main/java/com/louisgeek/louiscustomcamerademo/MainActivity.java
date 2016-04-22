@@ -3,9 +3,9 @@ package com.louisgeek.louiscustomcamerademo;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
@@ -66,15 +66,23 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     // The first rear facing camera
     private int defaultCameraId = 1;
     int cameraPosition = 1;
+
+    private ScreenSwitchUtils mScreenSwitchInstance;
+    private boolean isPortrait=true;
+    private int orientationState=ScreenSwitchUtils.ORIENTATION_HEAD_IS_UP;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Hide the window title.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         // getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        //setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);//强制横屏
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);//【旋转问题】首先强制竖屏，手机横过来时候 控件不变
 
         setContentView(R.layout.activity_main);
 
+        //【重力感应处理】 app内锁定横屏 或用户锁定横屏时候获得方向
+        mScreenSwitchInstance=ScreenSwitchUtils.init(getApplicationContext());
         //android M
         //判断是否有权限
       /*  if (ContextCompat.checkSelfPermission(this,Manifest.permission.CAMERA)
@@ -149,6 +157,22 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         startCamera();
 
     }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //【重力感应处理】
+        mScreenSwitchInstance.start(this);
+    }
+    @Override
+    protected void onStop() {
+        super.onStop();
+        //【重力感应处理】
+        mScreenSwitchInstance.stop();
+    }
+
+
+
+
 
     public void onClick(View view) {
         switch (view.getId()) {
@@ -193,6 +217,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             case R.id.id_iv_change:
                // changeCamera();
                 changeCameraTwo();
+
                 break;
             default:
 
@@ -491,8 +516,38 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
 
         Log.d("CameraSurfaceView", "CameraSurfaceView onPictureTaken data.length : " + data.length);
         Toast.makeText(this, "data.length : " + data.length, Toast.LENGTH_SHORT).show();
+        //获取方向
+        //int previewDegree=getDisplayRotation(this);
+        //获取配置的方向
+        //int xx=getRequestedOrientation();
 
+    /*    Configuration cf= this.getResources().getConfiguration();
+        int ori = cf.orientation ;
+        if(ori == cf.ORIENTATION_LANDSCAPE){
+        // 横屏
+            Toast.makeText(this,"1横屏",Toast.LENGTH_SHORT).show();
+        }else if(ori == cf.ORIENTATION_PORTRAIT){
+        // 竖屏
+            Toast.makeText(this,"1竖屏",Toast.LENGTH_SHORT).show();
+        }
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+       int mWidth = dm.widthPixels;
+        int mHeight = dm.heightPixels;
 
+        if (mHeight > mWidth){
+        // 竖屏
+            Toast.makeText(this,"2竖屏",Toast.LENGTH_SHORT).show();
+        }else{
+        // 横屏
+            Toast.makeText(this,"2横屏",Toast.LENGTH_SHORT).show();
+        }
+*/
+
+        isPortrait=mScreenSwitchInstance.isPortrait();
+        orientationState=mScreenSwitchInstance.getOrientationState();
+        Log.i("xxx","louis==xx==isPortrait："+isPortrait);
+        Log.i("xxx","louis==xx==orientationState："+orientationState);
         // 保存图片
         final byte[] b = data;
         new Thread(new Runnable() {
@@ -517,16 +572,60 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
      */
     private synchronized void handleAndSaveBitmap(byte[] data) {
         // 保存图片
-        Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length);
+       //### Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length);
+        Bitmap b = Utils.byteToBitmap(data);
 
-        //## Bitmap rightBitmap = Utils.rotate(b, 90);
+
+
         if(cameraPosition==1) {
-            rightBitmap = Utils.rotate(b, 90);
+            //后置摄像头
+            //rightBitmap = Utils.rotate(b, 0);
+             rightBitmap = Utils.rotate(b, 90);//摆正位置
+            //rightBitmap = Utils.rotate(b, 180);
+            // rightBitmap = Utils.rotate(b, 270);
+            //根据重力感应 更正旋转
+            switch (orientationState){
+                case ScreenSwitchUtils.ORIENTATION_HEAD_IS_UP:
+                    break;
+                case ScreenSwitchUtils.ORIENTATION_HEAD_IS_DOWN:
+                    rightBitmap = Utils.rotate(rightBitmap, 180);
+                    break;
+                case ScreenSwitchUtils.ORIENTATION_HEAD_IS_LEFT:
+                    rightBitmap = Utils.rotate(rightBitmap, 270);
+                    break;
+                case ScreenSwitchUtils.ORIENTATION_HEAD_IS_RIGHT:
+                    rightBitmap = Utils.rotate(rightBitmap, 90);
+                    break;
+            }
         }else{
-            rightBitmap = Utils.rotate(b, 270);
+            //前置摄像头
+            rightBitmap = Utils.rotate(b, 270);//摆正位置
+            //根据重力感应 更正旋转
+            switch (orientationState){
+                case ScreenSwitchUtils.ORIENTATION_HEAD_IS_UP:
+                    break;
+                case ScreenSwitchUtils.ORIENTATION_HEAD_IS_DOWN:
+                    rightBitmap = Utils.rotate(rightBitmap, 180);
+                    break;
+                case ScreenSwitchUtils.ORIENTATION_HEAD_IS_LEFT:
+                    rightBitmap = Utils.rotate(rightBitmap, 90);
+                    break;
+                case ScreenSwitchUtils.ORIENTATION_HEAD_IS_RIGHT:
+                    rightBitmap = Utils.rotate(rightBitmap, 270);
+                    break;
+            }
         }
 
-        Utils.compress(rightBitmap, 2 * 1024 * 1024);
+
+
+
+        //## Bitmap rightBitmap = Utils.rotate(b, 90);
+
+       /* if (!mScreenSwitchInstance.isPortrait()){
+            rightBitmap=Utils.rotate(rightBitmap,270);
+        }*/
+
+       //### ???Utils.compress(rightBitmap, 2 * 1024 * 1024);
 
         // 偏移量
         int moveX = mPreview.moveX * 2;
@@ -614,49 +713,31 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     }
 
 
-    /**
-     * 把图片byte流转换成bitmap
-     */
-    private Bitmap byteToBitmap(byte[] data) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-        int i = 0;
-        while (true) {
-            if ((options.outWidth >> i <= 1000)
-                    && (options.outHeight >> i <= 1000)) {
-                options.inSampleSize = (int) Math.pow(2.0D, i);
-                options.inJustDecodeBounds = false;
-                b = BitmapFactory.decodeByteArray(data, 0, data.length, options);
-                break;
-            }
-            i += 1;
-        }
-        return b;
-    }
 
-    // 用于根据手机方向获得相机预览画面旋转的角度
-    public static int getPreviewDegree(Activity activity) {
-        int degree = 0;
-        // 获得手机的方向
-        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-        //Log.d(TAG, "rotation : " + rotation);
-        // 根据手机的方向计算相机预览画面应该选择的角度
+
+    /**
+     * 重力感应导致横竖屏切换的条件下：获取当前屏幕旋转角度，要是锁定竖屏就一直返回0了。。。
+     *
+     * @param activity
+     * @return 0表示是竖屏; 90表示是左横屏; 180表示是反向竖屏; 270表示是右横屏
+     */
+    public static int getDisplayRotation(Activity activity) {
+        if(activity == null)
+        {return 0;}
+
+        int rotation = activity.getWindowManager().getDefaultDisplay()
+                .getRotation();
         switch (rotation) {
             case Surface.ROTATION_0:
-                degree = 90;
-                break;
+                return 0;
             case Surface.ROTATION_90:
-                degree = 0;
-                break;
+                return 90;
             case Surface.ROTATION_180:
-                degree = 270;
-                break;
+                return 180;
             case Surface.ROTATION_270:
-                degree = 180;
-                break;
+                return 270;
         }
-        return degree;
+        return 0;
     }
     public String saveImageFilePath(){
         String imageFilePath = Environment.getExternalStorageDirectory().getPath();
@@ -703,7 +784,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         outputStream.close();
         mCamera.startPreview(); // 拍完照后，重新开始预览
         if (false) {
-            Bitmap b = byteToBitmap(data);
+            Bitmap b = Utils.byteToBitmap(data);
             // 获取手机屏幕的宽高
             WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
             int windowWidth = windowManager.getDefaultDisplay().getWidth();
@@ -715,6 +796,8 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
 
         }
     }
+
+
 }
 
 
