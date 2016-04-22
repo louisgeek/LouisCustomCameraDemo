@@ -18,7 +18,7 @@ import java.util.List;
  * support preview sizes at the same aspect ratio as the device's display.
  * <p/>
  */
-public  class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, Camera.AutoFocusCallback {
+public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, Camera.AutoFocusCallback {
     private final String TAG = "Preview";
 
     /**

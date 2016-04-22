@@ -28,7 +28,7 @@ public class ImageViewUtil {
      * with scale type set to {@link ImageView#ScaleType #CENTER_INSIDE}.
      *
      * @param bitmap the Bitmap
-     * @param view the parent View of the Bitmap
+     * @param view   the parent View of the Bitmap
      * @return the rectangular position of the Bitmap
      */
     public static Rect getBitmapRectCenterInside(Bitmap bitmap, View view) {
@@ -45,17 +45,16 @@ public class ImageViewUtil {
      * Gets the rectangular position of a Bitmap if it were placed inside a View
      * with scale type set to {@link ImageView#ScaleType #CENTER_INSIDE}.
      *
-     * @param bitmapWidth the Bitmap's width
+     * @param bitmapWidth  the Bitmap's width
      * @param bitmapHeight the Bitmap's height
-     * @param viewWidth the parent View's width
-     * @param viewHeight the parent View's height
+     * @param viewWidth    the parent View's width
+     * @param viewHeight   the parent View's height
      * @return the rectangular position of the Bitmap
      */
     public static Rect getBitmapRectCenterInside(int bitmapWidth,
                                                  int bitmapHeight,
                                                  int viewWidth,
-                                                 int viewHeight)
-    {
+                                                 int viewHeight) {
         return getBitmapRectCenterInsideHelper(bitmapWidth, bitmapHeight, viewWidth, viewHeight);
     }
 
@@ -64,10 +63,10 @@ public class ImageViewUtil {
      * position of a Bitmap if it were placed inside a View with scale type set
      * to {@link ImageView#ScaleType #CENTER_INSIDE}.
      *
-     * @param bitmapWidth the Bitmap's width
+     * @param bitmapWidth  the Bitmap's width
      * @param bitmapHeight the Bitmap's height
-     * @param viewWidth the parent View's width
-     * @param viewHeight the parent View's height
+     * @param viewWidth    the parent View's width
+     * @param viewHeight   the parent View's height
      * @return the rectangular position of the Bitmap
      */
     private static Rect getBitmapRectCenterInsideHelper(int bitmapWidth,
@@ -92,13 +91,11 @@ public class ImageViewUtil {
 
         // If either needs to be fixed, choose smallest ratio and calculate from
         // there
-        if (viewToBitmapWidthRatio != Double.POSITIVE_INFINITY || viewToBitmapHeightRatio != Double.POSITIVE_INFINITY)
-        {
+        if (viewToBitmapWidthRatio != Double.POSITIVE_INFINITY || viewToBitmapHeightRatio != Double.POSITIVE_INFINITY) {
             if (viewToBitmapWidthRatio <= viewToBitmapHeightRatio) {
                 resultWidth = viewWidth;
                 resultHeight = (bitmapHeight * resultWidth / bitmapWidth);
-            }
-            else {
+            } else {
                 resultHeight = viewHeight;
                 resultWidth = (bitmapWidth * resultHeight / bitmapHeight);
             }
@@ -117,8 +114,7 @@ public class ImageViewUtil {
         } else if (resultHeight == viewHeight) {
             resultX = (int) Math.round((viewWidth - resultWidth) / 2);
             resultY = 0;
-        }
-        else {
+        } else {
             resultX = (int) Math.round((viewWidth - resultWidth) / 2);
             resultY = (int) Math.round((viewHeight - resultHeight) / 2);
         }

@@ -31,6 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginLeft="10dp"
+            android:padding="15dp"
             android:gravity="center"
             android:src="@mipmap/camera_flash_off"
             android:onClick="onClick"
@@ -42,6 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="10dp"
+            android:padding="15dp"
             android:gravity="center"
             android:src="@mipmap/camera_config"
             android:onClick="onClick"
@@ -53,6 +55,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:layout_marginRight="10dp"
+            android:padding="15dp"
             android:layout_alignParentRight="true"
             android:gravity="center"
             android:src="@mipmap/camera_change"
@@ -101,6 +104,7 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:onClick="onClick"
+            android:padding="15dp"
             android:src="@mipmap/camera_normal_new"
              />
     </RelativeLayout>

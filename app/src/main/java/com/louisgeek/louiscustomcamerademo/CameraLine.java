@@ -16,21 +16,20 @@ public class CameraLine extends View {
     private Paint mLineCrossPaint;
 
 
-    final  int LINE_STYLE_HIDE_LINE=0;
-    final  int LINE_STYLE_SHOW_LINES=1;
-    final  int LINE_STYLE_SHOW_LINES_LINE_IS_WIDE=2;
+    final int LINE_STYLE_HIDE_LINE = 0;
+    final int LINE_STYLE_SHOW_LINES = 1;
+    final int LINE_STYLE_SHOW_LINES_LINE_IS_WIDE = 2;
 
 
-    int nowLineStyle=LINE_STYLE_HIDE_LINE;//默认隐藏
+    int nowLineStyle = LINE_STYLE_HIDE_LINE;//默认隐藏
     boolean showLines;
-
 
 
     // 窄 对称 网格线
     // 宽 井字 网格线
     boolean lineIsWide = false;
 
-    float crossLineLength=0;//默认
+    float crossLineLength = 0;//默认
 
     public CameraLine(Context context) {
         super(context);
@@ -62,13 +61,13 @@ public class CameraLine extends View {
         float lineCrossLength = typedArray.getDimension(R.styleable.CameraLine_Attrs_lineCrossLength, 0);
         float lineCrossWidth = typedArray.getDimension(R.styleable.CameraLine_Attrs_lineCrossWidth, 0);
 
-        int lineCrossColor= typedArray.getInt(R.styleable.CameraLine_Attrs_lineCrossColor, 0);
-        boolean lineIsShow= typedArray.getBoolean(R.styleable.CameraLine_Attrs_lineIsShow, true);
+        int lineCrossColor = typedArray.getInt(R.styleable.CameraLine_Attrs_lineCrossColor, 0);
+        boolean lineIsShow = typedArray.getBoolean(R.styleable.CameraLine_Attrs_lineIsShow, true);
         typedArray.recycle();
         Log.i("XXX", "louis=xx:lineColor:" + lineColor + "lineWidth:" + lineWidth);
 
         this.lineIsWide = lineIsWide;
-        showLines=lineIsShow;
+        showLines = lineIsShow;
         // 覆盖
         if (lineColor != 0) {
             mLinePaint.setColor(lineColor);
@@ -76,10 +75,10 @@ public class CameraLine extends View {
         if (lineWidth != 0) {
             mLinePaint.setStrokeWidth(lineWidth);
         }
-        if (lineCrossLength!=0){
-            crossLineLength=Utils.dip2px(getContext(), lineCrossLength);
+        if (lineCrossLength != 0) {
+            crossLineLength = Utils.dip2px(getContext(), lineCrossLength);
         }
-        if (lineCrossWidth!=0){
+        if (lineCrossWidth != 0) {
             mLineCrossPaint.setStrokeWidth(Utils.dip2px(getContext(), 1));
         }
         if (lineCrossColor != 0) {
@@ -87,25 +86,27 @@ public class CameraLine extends View {
         }
 
     }
-    public void changeLineStyle(){
-        switch (nowLineStyle){
+
+    public void changeLineStyle() {
+        switch (nowLineStyle) {
             case LINE_STYLE_HIDE_LINE:
-                nowLineStyle=LINE_STYLE_SHOW_LINES;
-                lineIsWide=true;
-                showLines=true;
+                nowLineStyle = LINE_STYLE_SHOW_LINES;
+                lineIsWide = true;
+                showLines = true;
                 break;
             case LINE_STYLE_SHOW_LINES:
-                nowLineStyle=LINE_STYLE_SHOW_LINES_LINE_IS_WIDE;
-                lineIsWide=false;
-                showLines=true;
+                nowLineStyle = LINE_STYLE_SHOW_LINES_LINE_IS_WIDE;
+                lineIsWide = false;
+                showLines = true;
                 break;
             case LINE_STYLE_SHOW_LINES_LINE_IS_WIDE:
-                nowLineStyle=LINE_STYLE_HIDE_LINE;
-                showLines=false;
+                nowLineStyle = LINE_STYLE_HIDE_LINE;
+                showLines = false;
                 break;
         }
         this.invalidate();
     }
+
     // 默认
     private void init() {
         mLinePaint = new Paint();
@@ -127,7 +128,7 @@ public class CameraLine extends View {
             int screenHeight = Utils.getScreenWH(getContext()).heightPixels;
 
 		/*
-		 * int width = screenWidth/3; int height = screenHeight/3;
+         * int width = screenWidth/3; int height = screenHeight/3;
 		 * 
 		 * for (int i = width, j = 0;i < screenWidth && j<2;i += width, j++) {
 		 * canvas.drawLine(i, 0, i, screenHeight, mLinePaint); } for (int j =
@@ -175,7 +176,6 @@ public class CameraLine extends View {
             }
         }
     }
-
 
 
 }

@@ -35,10 +35,11 @@ import java.util.Date;
 /**
  * 遇到的问题：显示相机SurfaceView尺寸，相机预览尺寸 和 相机保存图片尺寸 三者不一致
  */
-public class MainActivity extends Activity implements Camera.PictureCallback, Camera.ShutterCallback {
+public class CameraActivity extends Activity implements Camera.PictureCallback, Camera.ShutterCallback {
 
     public static final int FLAG_CHOOCE_PICTURE = 2001;
     private final int FLAG_AUTO_FOCUS = 1001;
+    private final int TAKE_PHOTO_FINISH = 1002;
 
     private final int FOCUS_DURATION = 3000;//延迟聚焦
 
@@ -68,8 +69,10 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     int cameraPosition = 1;
 
     private ScreenSwitchUtils mScreenSwitchInstance;
-    private boolean isPortrait=true;
-    private int orientationState=ScreenSwitchUtils.ORIENTATION_HEAD_IS_UP;
+    private boolean isPortrait = true;
+    private int orientationState = ScreenSwitchUtils.ORIENTATION_HEAD_IS_UP;
+
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,7 +85,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         setContentView(R.layout.activity_main);
 
         //【重力感应处理】 app内锁定横屏 或用户锁定横屏时候获得方向
-        mScreenSwitchInstance=ScreenSwitchUtils.init(getApplicationContext());
+        mScreenSwitchInstance = ScreenSwitchUtils.init(getApplicationContext());
         //android M
         //判断是否有权限
       /*  if (ContextCompat.checkSelfPermission(this,Manifest.permission.CAMERA)
@@ -101,10 +104,10 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
 
 
         if (!Utils.checkCameraHardware(this)) {
-            Toast.makeText(MainActivity.this, "设备没有摄像头", Toast.LENGTH_SHORT).show();
+            Toast.makeText(CameraActivity.this, "设备没有摄像头", Toast.LENGTH_SHORT).show();
             return;
         }
-        mCameraLine= (CameraLine) findViewById(R.id.id_cl);
+        mCameraLine = (CameraLine) findViewById(R.id.id_cl);
         //
         preview_iv = (ImageView) findViewById(R.id.id_preview_iv);
         RelativeLayout id_rl_cp_view = (RelativeLayout) findViewById(R.id.id_rl_cp_view);
@@ -113,7 +116,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             @Override
             public void OnSingleClick(View v) {
                 // TODO Auto-generated method stub
-                zoomDown();//淡季缩小
+                zoomDown();//单机缩小
             }
 
             @Override
@@ -132,9 +135,20 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                     if (mCamera != null && safeToTakePicture && !TextUtils.isEmpty(mCamera.getParameters().getFlashMode())) {
                         mCamera.startPreview();
                         mCamera.autoFocus(null);
-                        //### Toast.makeText(MainActivity.this, "auto focus", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(CameraActivity.this, "auto focus", Toast.LENGTH_SHORT).show();
                     }
+
                     handler.sendEmptyMessageDelayed(FLAG_AUTO_FOCUS, FOCUS_DURATION);
+
+                } else if (msg.what == TAKE_PHOTO_FINISH) {
+                    // byte[] bitmapByte= (byte[]) msg.obj;
+                    if (msg.obj == null) {
+                        return;
+                    }
+                    String filePath = msg.obj.toString();
+                    Intent intent = new Intent(CameraActivity.this, PreviewActivity.class);
+                    intent.putExtra("filePath", filePath);
+                    CameraActivity.this.startActivity(intent);
                 }
             }
         };
@@ -157,21 +171,20 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         startCamera();
 
     }
+
     @Override
     protected void onStart() {
         super.onStart();
         //【重力感应处理】
         mScreenSwitchInstance.start(this);
     }
+
     @Override
     protected void onStop() {
         super.onStop();
         //【重力感应处理】
         mScreenSwitchInstance.stop();
     }
-
-
-
 
 
     public void onClick(View view) {
@@ -185,25 +198,29 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                 params.setFocusMode(Parameters.FOCUS_MODE_AUTO);
                 mCamera.setParameters(params);
                 mCamera.takePicture(null, null, mPictureCallback);*/
+
+
                 //快门
-                stopFocus();
-                mCamera.autoFocus(new Camera.AutoFocusCallback() {//自动对焦
+                //stopFocus();
+
+             /*   mCamera.autoFocus(new Camera.AutoFocusCallback() {//自动对焦
                     @Override
                     public void onAutoFocus(boolean success, Camera camera) {
                         // TODO Auto-generated method stub
                         if (success) {
-                          /*  //设置参数，并拍照
+                         *//*  //设置参数，并拍照
                             Camera.Parameters params = camera.getParameters();
                             params.setPictureFormat(PixelFormat.JPEG);//图片格式
                             params.setPreviewSize(800, 480);//图片大小
                             camera.setParameters(params);//将参数设置到我的camera
-                            camera.takePicture(null, null, mPictureCallback);//将拍摄到的照片给自定义的对象*/
-                            // camera.takePicture(null, null, MainActivity.this);
-                             takePicture(null, null, MainActivity.this);
+                            camera.takePicture(null, null, mPictureCallback);//将拍摄到的照片给自定义的对象*//**//**//**//*
+                            // camera.takePicture(null, null, CameraActivity.this);*//*
+                            takePicture(null, null, CameraActivity.this);
                         }
                     }
-                });
-                // takePicture(null, null, this);
+                });*/
+                stopFocus();
+                takePicture(null, null, this);
                 break;
             case R.id.id_iv_flash_switch:
                 toggleFlash();
@@ -215,7 +232,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                 //###choosePicture();
                 break;*/
             case R.id.id_iv_change:
-               // changeCamera();
+                // changeCamera();
                 changeCameraTwo();
 
                 break;
@@ -230,9 +247,10 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     protected void onResume() {
         super.onResume();
 
-       startCamera();
+        startCamera();
     }
-    private void changeCamera(){
+
+    private void changeCamera() {
         // Find the total number of cameras available
         numberOfCameras = Camera.getNumberOfCameras();
 
@@ -240,8 +258,8 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         for (int i = 0; i < numberOfCameras; i++) {
             Camera.getCameraInfo(i, cameraInfo);
-            if(defaultCameraId == 1) {
-                if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_FRONT) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
+            if (defaultCameraId == 1) {
+                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
 
                     releaseCamera();
                     mCamera = Camera.open(i);//打开当前选中的摄像头
@@ -249,7 +267,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                     defaultCameraId = 0;
                     break;
                 }
-        }else {
+            } else {
                 if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
 
                     mCamera.release();//释放资源
@@ -258,19 +276,21 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                     defaultCameraId = 1;
                     break;
                 }
-            }}
+            }
+        }
     }
-    void changeCameraTwo(){
+
+    void changeCameraTwo() {
         //切换前后摄像头
         int cameraCount = 0;
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         cameraCount = Camera.getNumberOfCameras();//得到摄像头的个数
-        for(int i = 0; i < cameraCount; i++   ) {
+        for (int i = 0; i < cameraCount; i++) {
             Camera.getCameraInfo(i, cameraInfo);//得到每一个摄像头的信息
-            if(cameraPosition == 1) {
+            if (cameraPosition == 1) {
                 Toast.makeText(this, "1现在是后置，变更为前置", Toast.LENGTH_SHORT).show();
                 //现在是后置，变更为前置
-                if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_FRONT) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
+                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
                     mCamera.stopPreview();//停掉原来摄像头的预览
                    /*
                     mCamera.release();//释放资源
@@ -279,7 +299,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                     mCamera = Camera.open(i);//打开当前选中的摄像头
                     try {
                         mCamera.setPreviewDisplay(mPreview.getLouisSurfaceHolder());//通过surfaceview显示取景画面
-                       // mCamera.setDisplayOrientation(90); //
+                        // mCamera.setDisplayOrientation(90); //
                         mPreview.setCamera(mCamera);
                     } catch (IOException e) {
                         // TODO Auto-generated catch block
@@ -292,7 +312,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             } else {
                 Toast.makeText(this, "2现在是前置， 变更为后置", Toast.LENGTH_SHORT).show();
                 //现在是前置， 变更为后置
-                if(cameraInfo.facing  == Camera.CameraInfo.CAMERA_FACING_BACK) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
+                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
                     mCamera.stopPreview();//停掉原来摄像头的预览
                     /*
                     mCamera.release();//释放资源
@@ -315,6 +335,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
 
         }
     }
+
     private void startCamera() {
         // Open the default i.e. the first rear facing camera.
         try {
@@ -358,6 +379,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         super.onDestroy();
         releaseCamera();
     }
+
     /**
      * 释放mCamera
      */
@@ -370,6 +392,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             mCamera = null;
         }
     }
+
     /**
      * 释放mCamera
      */
@@ -413,6 +436,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             zoomValue--;
         } else {
             zoomValue = 0;
+            // Toast.makeText(getApplicationContext(), "已缩小到最小级别", Toast.LENGTH_SHORT).show();
             return;
         }
         int value = (int) (1F * zoomValue / ZOOM_FACTOR * p.getMaxZoom());
@@ -434,7 +458,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             zoomValue++;
         } else {
             zoomValue = ZOOM_FACTOR;
-            Toast.makeText(getApplicationContext(), "已放大最大级别", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "已放大到最大级别", Toast.LENGTH_SHORT).show();
             return;
         }
         int value = (int) (1F * zoomValue / ZOOM_FACTOR * p.getMaxZoom());
@@ -502,12 +526,12 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     public void onPictureTaken(byte[] data, Camera camera) {
 
         // cameraSurfaceView.restartPreview();
-        if (mCamera != null) {
+       /*2016年4月22日15:54:46   if (mCamera != null) {
             mCamera.startPreview();
             if (!TextUtils.isEmpty(mCamera.getParameters().getFlashMode())) {
                 mCamera.autoFocus(mPreview);
             }
-        }
+        }*/
 
         if (data == null || data.length <= 0) {
             safeToTakePicture = true;
@@ -515,7 +539,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         }
 
         Log.d("CameraSurfaceView", "CameraSurfaceView onPictureTaken data.length : " + data.length);
-        Toast.makeText(this, "data.length : " + data.length, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "data.length : " + data.length, Toast.LENGTH_SHORT).show();
         //获取方向
         //int previewDegree=getDisplayRotation(this);
         //获取配置的方向
@@ -544,10 +568,10 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         }
 */
 
-        isPortrait=mScreenSwitchInstance.isPortrait();
-        orientationState=mScreenSwitchInstance.getOrientationState();
-        Log.i("xxx","louis==xx==isPortrait："+isPortrait);
-        Log.i("xxx","louis==xx==orientationState："+orientationState);
+        isPortrait = mScreenSwitchInstance.isPortrait();
+        orientationState = mScreenSwitchInstance.getOrientationState();
+        Log.i("xxx", "louis==xx==isPortrait：" + isPortrait);
+        Log.i("xxx", "louis==xx==orientationState：" + orientationState);
         // 保存图片
         final byte[] b = data;
         new Thread(new Runnable() {
@@ -572,19 +596,18 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
      */
     private synchronized void handleAndSaveBitmap(byte[] data) {
         // 保存图片
-       //### Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length);
-        Bitmap b = Utils.byteToBitmap(data);
+        //### Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length);
+        Bitmap b = Utils.Bytes2Bitmap(data);
 
 
-
-        if(cameraPosition==1) {
+        if (cameraPosition == 1) {
             //后置摄像头
             //rightBitmap = Utils.rotate(b, 0);
-             rightBitmap = Utils.rotate(b, 90);//摆正位置
+            rightBitmap = Utils.rotate(b, 90);//摆正位置
             //rightBitmap = Utils.rotate(b, 180);
             // rightBitmap = Utils.rotate(b, 270);
             //根据重力感应 更正旋转
-            switch (orientationState){
+            switch (orientationState) {
                 case ScreenSwitchUtils.ORIENTATION_HEAD_IS_UP:
                     break;
                 case ScreenSwitchUtils.ORIENTATION_HEAD_IS_DOWN:
@@ -597,11 +620,11 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
                     rightBitmap = Utils.rotate(rightBitmap, 90);
                     break;
             }
-        }else{
+        } else {
             //前置摄像头
             rightBitmap = Utils.rotate(b, 270);//摆正位置
             //根据重力感应 更正旋转
-            switch (orientationState){
+            switch (orientationState) {
                 case ScreenSwitchUtils.ORIENTATION_HEAD_IS_UP:
                     break;
                 case ScreenSwitchUtils.ORIENTATION_HEAD_IS_DOWN:
@@ -616,7 +639,11 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             }
         }
 
-
+        String filePath = saveImageFile(rightBitmap);
+        Message message = handler.obtainMessage();
+        message.what = TAKE_PHOTO_FINISH;
+        message.obj = filePath;
+        message.sendToTarget();
 
 
         //## Bitmap rightBitmap = Utils.rotate(b, 90);
@@ -625,9 +652,9 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             rightBitmap=Utils.rotate(rightBitmap,270);
         }*/
 
-       //### ???Utils.compress(rightBitmap, 2 * 1024 * 1024);
+        //### ???Utils.compress(rightBitmap, 2 * 1024 * 1024);
 
-        // 偏移量
+   /*     // 偏移量
         int moveX = mPreview.moveX * 2;
         int previewW = mPreview.mPreviewSize.width;
         int previewH = mPreview.mPreviewSize.height;
@@ -641,9 +668,9 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
 
         int cropWidth = (int) (1F * viewHeight / mScreenWidth * (rightBitmap.getWidth() - moveX));
 
-        int statusBarHeight = Utils.getStatusBarHeight(MainActivity.this);
+        int statusBarHeight = Utils.getStatusBarHeight(CameraActivity.this);
         int cropX = (int) (rightBitmap.getWidth() / 2 - cropWidth / 2 + 1F * statusBarHeight * pictureW / pictureH / 2);
-        int cropY = rightBitmap.getHeight() / 2 - cropWidth / 2 - Utils.dip2px(MainActivity.this, 59)
+        int cropY = rightBitmap.getHeight() / 2 - cropWidth / 2 - Utils.dip2px(CameraActivity.this, 59)
                 + statusBarHeight / 2;
         Log.d("", "mPreview.moveY : " + mPreview.moveY);
         if (rightBitmap.getWidth() < cropWidth + cropX) {
@@ -655,18 +682,27 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         // Log.d("CameraSurfaceView", "CameraSurfaceView viewWidth   : " + centerWindowView.getWidth());
         Log.d("CameraSurfaceView", "CameraSurfaceView bitmapWidth : " + rightBitmap.getWidth() / 2);
 
-        final Bitmap bmp = Bitmap.createBitmap(rightBitmap, cropX, cropY, cropWidth, cropWidth);
+        final Bitmap bmp = Bitmap.createBitmap(rightBitmap, cropX, cropY, cropWidth, cropWidth);*/
 
-        handler.post(new Runnable() {
+       /* handler.post(new Runnable() {
             @Override
             public void run() {
                 //####2016年4月20日20:02:15 preview_iv.setImageBitmap(bmp);
                 preview_iv.setImageBitmap(rightBitmap);
                // preview_iv.setScaleType(ScaleType.FIT_XY);
             }
-        });
+        });*/
 
         // Bitmap bmp = Utils.getCroppedImage(b, centerWindowView);
+        // saveImageFile(bmp);
+      /*  if (b != null && !b.isRecycled()) {
+            b.recycle();
+            b = null;
+        }*/
+    }
+
+    private String saveImageFile(Bitmap bmp) {
+        String filePath = null;
         File file = Utils.getDiskCacheDir(this, "bitmap");
         if (!file.exists()) {
             file.mkdirs();
@@ -677,20 +713,19 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
             bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
             bos.flush();
             bos.close();
+            filePath = f.getAbsolutePath();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-            if (b != null && !b.isRecycled()) {
-                b.recycle();
-                b = null;
-            }
-            /*if (bmp != null && !bmp.isRecycled()) {
+
+            if (bmp != null && !bmp.isRecycled()) {
                 bmp.recycle();
                 bmp = null;
-            }*/
+            }
         }
+        return filePath;
     }
 
     /**
@@ -713,8 +748,6 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
     }
 
 
-
-
     /**
      * 重力感应导致横竖屏切换的条件下：获取当前屏幕旋转角度，要是锁定竖屏就一直返回0了。。。
      *
@@ -722,8 +755,9 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
      * @return 0表示是竖屏; 90表示是左横屏; 180表示是反向竖屏; 270表示是右横屏
      */
     public static int getDisplayRotation(Activity activity) {
-        if(activity == null)
-        {return 0;}
+        if (activity == null) {
+            return 0;
+        }
 
         int rotation = activity.getWindowManager().getDefaultDisplay()
                 .getRotation();
@@ -739,38 +773,39 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         }
         return 0;
     }
-    public String saveImageFilePath(){
+
+    public String saveImageFilePath() {
         String imageFilePath = Environment.getExternalStorageDirectory().getPath();
-        SimpleDateFormat sdf =   new SimpleDateFormat("yyyy_MM_dd" );
-        imageFilePath = imageFilePath+ File.separator+"TongueImage";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy_MM_dd");
+        imageFilePath = imageFilePath + File.separator + "TongueImage";
 
         IfNotExistMkdir(imageFilePath);
 
-        String subPath=File.separator+sdf.format(new Date());
-        imageFilePath +=subPath;
+        String subPath = File.separator + sdf.format(new Date());
+        imageFilePath += subPath;
 
         IfNotExistMkdir(imageFilePath);
 
-        SimpleDateFormat hms =   new SimpleDateFormat("HHMMSS");
-        String FileName=hms.format(new Date());
-        return imageFilePath=File.separator+imageFilePath+File.separator+FileName+".jpg";
+        SimpleDateFormat hms = new SimpleDateFormat("HHMMSS");
+        String FileName = hms.format(new Date());
+        return imageFilePath = File.separator + imageFilePath + File.separator + FileName + ".jpg";
     }
-    private void IfNotExistMkdir(String filePath)
-    {
+
+    private void IfNotExistMkdir(String filePath) {
         File file = new File(filePath);
         if (!file.exists()) {
-            try{
+            try {
                 file.mkdir();
-            }catch(Exception e)
-            {
+            } catch (Exception e) {
                 //no do
             }
 
 
         }
     }
+
     public void saveToSDCard(byte[] data) throws IOException {
-       // Log.d(TAG, "saveToSDCard");
+        // Log.d(TAG, "saveToSDCard");
         Date date = new Date();
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss"); // 格式化时间
         String filename = format.format(date) + ".jpg";
@@ -784,7 +819,7 @@ public class MainActivity extends Activity implements Camera.PictureCallback, Ca
         outputStream.close();
         mCamera.startPreview(); // 拍完照后，重新开始预览
         if (false) {
-            Bitmap b = Utils.byteToBitmap(data);
+            Bitmap b = Utils.BytesToBitmap(data);
             // 获取手机屏幕的宽高
             WindowManager windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
             int windowWidth = windowManager.getDefaultDisplay().getWidth();

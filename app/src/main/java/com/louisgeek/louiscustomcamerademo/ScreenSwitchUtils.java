@@ -22,12 +22,12 @@ public class ScreenSwitchUtils {
     // 是否是竖屏
     private boolean isPortrait = true;
 
-    public static final int ORIENTATION_HEAD_IS_UP=0;
-    public static final int ORIENTATION_HEAD_IS_LEFT=1;
-    public static final int ORIENTATION_HEAD_IS_RIGHT=2;
-    public static final int ORIENTATION_HEAD_IS_DOWN=3;
+    public static final int ORIENTATION_HEAD_IS_UP = 0;
+    public static final int ORIENTATION_HEAD_IS_LEFT = 1;
+    public static final int ORIENTATION_HEAD_IS_RIGHT = 2;
+    public static final int ORIENTATION_HEAD_IS_DOWN = 3;
 
-    private int orientationState=ORIENTATION_HEAD_IS_UP;//默认
+    private int orientationState = ORIENTATION_HEAD_IS_UP;//默认
     private SensorManager sm;
     private OrientationSensorListener listener;
     private Sensor sensor;
@@ -42,33 +42,37 @@ public class ScreenSwitchUtils {
                 case 88888:
                     int orientation = msg.arg1;
                     if (orientation > 45 && orientation < 135) {
-                        orientationState=ORIENTATION_HEAD_IS_RIGHT;
+                        orientationState = ORIENTATION_HEAD_IS_RIGHT;
                     } else if (orientation > 135 && orientation < 225) {
-                        orientationState=ORIENTATION_HEAD_IS_DOWN;
+                        orientationState = ORIENTATION_HEAD_IS_DOWN;
                     } else if (orientation > 225 && orientation < 315) {
                         if (isPortrait) {
                             Log.d(TAG, "切换成横屏");
-                           //### mActivity.setRequestedOrientation(0);
+                            //### mActivity.setRequestedOrientation(0);
                             isPortrait = false;
                         }
-                        orientationState=ORIENTATION_HEAD_IS_LEFT;
+                        orientationState = ORIENTATION_HEAD_IS_LEFT;
                     } else if ((orientation > 315 && orientation < 360) || (orientation > 0 && orientation < 45)) {
                         if (!isPortrait) {
                             Log.d(TAG, "切换成竖屏");
-                           //### mActivity.setRequestedOrientation(1);
+                            //### mActivity.setRequestedOrientation(1);
                             isPortrait = true;
                         }
-                        orientationState=ORIENTATION_HEAD_IS_UP;
+                        orientationState = ORIENTATION_HEAD_IS_UP;
                     }
                     break;
                 default:
                     break;
             }
 
-        };
+        }
+
+        ;
     };
 
-    /** 返回ScreenSwitchUtils单例 **/
+    /**
+     * 返回ScreenSwitchUtils单例
+     **/
     public static ScreenSwitchUtils init(Context context) {
         if (mInstance == null) {
             synchronized (ScreenSwitchUtils.class) {
@@ -93,14 +97,18 @@ public class ScreenSwitchUtils {
         listener1 = new OrientationSensorListener1();
     }
 
-    /** 开始监听 */
+    /**
+     * 开始监听
+     */
     public void start(Activity activity) {
         Log.d(TAG, "start orientation listener");
         mActivity = activity;
         sm.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI);
     }
 
-    /** 停止监听 */
+    /**
+     * 停止监听
+     */
     public void stop() {
         Log.d(TAG, "stop orientation listener");
         sm.unregisterListener(listener);
@@ -124,12 +132,12 @@ public class ScreenSwitchUtils {
         }
     }
 
-    public boolean isPortrait(){
+    public boolean isPortrait() {
         return this.isPortrait;
     }
 
-    public  int getOrientationState(){
-        return  orientationState;
+    public int getOrientationState() {
+        return orientationState;
     }
 
     /**
@@ -221,7 +229,7 @@ public class ScreenSwitchUtils {
                 }
             } else if ((orientation > 315 && orientation < 360) || (orientation > 0 && orientation < 45)) {// 检测到当前实际是竖屏
                 if (isPortrait) {
-                    sm.registerListener(listener, sensor,SensorManager.SENSOR_DELAY_UI);
+                    sm.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI);
                     sm1.unregisterListener(listener1);
                 }
             }

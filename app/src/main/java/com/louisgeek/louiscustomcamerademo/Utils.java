@@ -31,7 +31,6 @@ public class Utils {
     }
 
 
-
     /**
      * 根据手机的分辨率从 dp 的单位 转成为 px(像素)
      *
@@ -204,6 +203,7 @@ public class Utils {
 
     /**
      * 获取状态栏高度
+     *
      * @param context
      * @return
      */
@@ -225,7 +225,7 @@ public class Utils {
             field = c.getField("status_bar_height");
             x = Integer.parseInt(field.get(obj).toString());
             sbar = context.getResources().getDimensionPixelSize(x);
-        } catch(Exception e1) {
+        } catch (Exception e1) {
             // loge("get status bar height fail");
             e1.printStackTrace();
         }
@@ -252,7 +252,7 @@ public class Utils {
      * @param previewRight
      * @param previewTop
      * @param previewBottom
-     * @return Rect(left,top,right,bottom) : left、top、right、bottom是以显示区域中心为原点的坐标
+     * @return Rect(left, top, right, bottom) : left、top、right、bottom是以显示区域中心为原点的坐标
      */
     public static Rect calculateTapArea(int focusWidth, int focusHeight,
                                         float areaMultiple, float x, float y, int previewleft,
@@ -284,6 +284,7 @@ public class Utils {
     /**
      * 检测摄像头设备是否可用
      * Check if this device has a camera
+     *
      * @param context
      * @return
      */
@@ -319,6 +320,7 @@ public class Utils {
         }
         return path;
     }
+
     /**
      * 旋转图片
      *
@@ -332,8 +334,10 @@ public class Utils {
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
                 bitmap.getHeight(), matrix, true);
     }
+
     /**
      * bitmap旋转
+     *
      * @param b
      * @param degrees
      * @return
@@ -369,7 +373,7 @@ public class Utils {
     /**
      * 把图片byte流转换成bitmap
      */
-    public static Bitmap byteToBitmap(byte[] data) {
+    public static Bitmap BytesToBitmap(byte[] data) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         Bitmap b = BitmapFactory.decodeByteArray(data, 0, data.length, options);
@@ -385,5 +389,31 @@ public class Utils {
             i += 1;
         }
         return b;
+    }
+
+    /**
+     * Bitmap → byte[]
+     *
+     * @param bm
+     * @return
+     */
+    public static byte[] BitmapToBytes(Bitmap bm) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        return baos.toByteArray();
+    }
+
+    /**
+     * byte[] → Bitmap
+     *
+     * @param b
+     * @return
+     */
+    public static Bitmap Bytes2Bitmap(byte[] b) {
+        if (b.length != 0) {
+            return BitmapFactory.decodeByteArray(b, 0, b.length);
+        } else {
+            return null;
+        }
     }
 }
